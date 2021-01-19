@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "urule.repository.databasetype",
+      "type": "java.lang.String",
+      "description": "Description for urule.repository.databasetype."
+  }
+] }

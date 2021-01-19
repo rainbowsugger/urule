@@ -1,0 +1,20 @@
+server:
+  port: 8787
+spring:
+  datasource:
+    jdbc-url: jdbc:mysql://localhost:3306/urule_test?useUnicode=true&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: jie.lin
+  jackson:
+    default-property-inclusion: non_null
+
+product:
+  url : http://mall.datastreamer.cn
+
+urule:
+  repository:
+    datasourcename: datasource
+    databasetype: mysql
+
+
