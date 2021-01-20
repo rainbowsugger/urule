@@ -1,4 +1,4 @@
-package com.rule.server.ruleserver.vo;
+package com.rule.client.ruleclient.vo;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

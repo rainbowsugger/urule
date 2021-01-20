@@ -1,13 +1,14 @@
-package com.rule.server.ruleserver.service;
+package com.rule.client.ruleclient.service;
 
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.bstek.urule.model.ExposeAction;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
-import com.rule.server.ruleserver.vo.*;
+import com.rule.client.ruleclient.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,7 @@ public class ProductBasicService {
         this.policyCenterService = policyCenterService;
     }
 
+    @ExposeAction(value = "get product formula id", parameters = {"objectId", "objectType", "businessType"})
     public Optional<Long> getProductFormulaDetail(Long objectId, String objectType, String businessType) throws Exception {
         ObjectFormulaVO queryModel = new ObjectFormulaVO();
         queryModel.setObjectId(objectId);
@@ -57,7 +59,7 @@ public class ProductBasicService {
          */
         return Optional.of(formula.getFormulaId());
     }
-
+    @ExposeAction(value = "get product Code", parameters = {"productId"})
     public String getProductCode(Integer productId){
         JSONObject productJson = policyCenterService.getProduct(productId);
         String productCode = JsonPath.read(productJson.toString(), "$.data.productBasic.productCode");
@@ -65,6 +67,7 @@ public class ProductBasicService {
         return productCode + "_" + versionName;
     }
 
+    @ExposeAction(value = "get product payment frequency list", parameters = {"productId"})
     public Map<Integer, BigDecimal> getPaymentFrequencyList(Integer productId) throws Exception {
         JSONObject productJson = policyCenterService.getProduct(productId);
         JSONArray frequencyJson = productJson.getJSONObject("data").getJSONArray("productPaymentFrequency");
@@ -76,6 +79,7 @@ public class ProductBasicService {
         return frequencyMap;
     }
 
+    @ExposeAction(value = "get sa unit", parameters = {"productId"})
     public Long getPremiumUnit(Integer productId){
         Configuration conf = Configuration.defaultConfiguration();
         JSONObject productJson = policyCenterService.getProduct(productId);
@@ -86,16 +90,61 @@ public class ProductBasicService {
         return premiumUnit.longValue();
     }
 
+    public Map<Integer, ProductRiskAggregationVO> getRiskAggregationList(Long productId){
+        try {
+            JSONObject productInfo = productCenterService.getProductInfo(productId);
+            List<ProductRiskAggregationVO> riskAggregationVOS =
+                productInfo.getJSONObject("data").getJSONArray("productRiskAggregations").toList(ProductRiskAggregationVO.class);
+            return riskAggregationVOS.stream().collect(Collectors.toMap(ProductRiskAggregationVO::getRiskCategory, productRiskAggregationVO -> productRiskAggregationVO, (o,n) -> n));
+        }catch (Exception e){
+            throw new RuntimeException("no risk aggregation info for product id "+ productId);
+        }
+
+    }
+
+    @ExposeAction(value = "get death risk sa", parameters = {"productId", "sa"})
+    public BigDecimal calcRiskSA(Long productId, Long sa, Integer riskCategory){
+        Map<Integer, ProductRiskAggregationVO> riskAggregationMap = getRiskAggregationList(productId);
+        // risk category = 1(death)
+        ProductRiskAggregationVO deathRiskAggregation = riskAggregationMap.get(riskCategory);
+        if(deathRiskAggregation == null){
+            //not exists death risk
+            return new BigDecimal(0);
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("RiskFactor",deathRiskAggregation.getRiskFactor());
+        params.put("SA", sa);
+        try{
+            return new BigDecimal(calculation(deathRiskAggregation.getSumRiskFormula(), params));
+        }catch (Exception e){
+            throw new RuntimeException("call formula calculation error with formula id "+ deathRiskAggregation.getSumRiskFormula());
+        }
+    }
+
+    @ExposeAction(value = "get non medical sa", parameters = {"productId"})
+    public BigDecimal getSaNonMedical(Long productId){
+        Configuration conf = Configuration.defaultConfiguration();
+        JSONObject productInfo = productCenterService.getProductInfo(productId);
+        Integer saNonMedical = JsonPath.using(conf.addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL)).parse(productInfo.toString()).read("$.data.productExtra.saNonMedical");
+        if(saNonMedical == null){
+            saNonMedical = 0;
+        }
+        return new BigDecimal(saNonMedical);
+    }
+
+    @ExposeAction(value = "calc premium", parameters = {"formulaId", "calc parameters"})
     public BigDecimal premiumCalculation(long formulaId, Map<String, Object> params){
         JSONObject premium = productCenterService.premiumCalculate(formulaId, params);
         return new BigDecimal(premium.getStr("data"));
     }
 
+    @ExposeAction(value = "formula calculation", parameters = {"formulaId", "calc parameters"})
     public String calculation(long formulaId, Map<String, Object> params){
         JSONObject premium = productCenterService.premiumCalculate(formulaId, params);
         return premium.getStr("data");
     }
 
+    @ExposeAction(value = "check policy cooling of cut date", parameters = {"pos application date", "policy commencement date", "productId list"})
     public boolean checkCoolingOffRule(@NotNull Date applicationDate, @NotNull Date commencementDate, List<Long> productIds) throws Exception{
         if (Objects.isNull(commencementDate)) {
             throw new RuntimeException("CheckCoolingOffRule Missing CommencementDate");
@@ -122,6 +171,7 @@ public class ProductBasicService {
         return "true".equalsIgnoreCase(strResult);
     }
 
+    @ExposeAction(value = "send email", parameters = {"calc parameters"})
     public Long sendEmail(Map<String, String> params) throws Exception {
         Map emailMap = new HashMap<>();
         try {
@@ -135,6 +185,7 @@ public class ProductBasicService {
 
     }
 
+    @ExposeAction(value = "send sms", parameters = {"calc parameters"})
     public Long sendSms(Map<String, String> params) throws Exception {
         Map smsMap = new HashMap<>();
         try {
@@ -148,6 +199,7 @@ public class ProductBasicService {
 
     }
 
+    @ExposeAction(value = "upload file", parameters = {"MultipartFile list", "branchId"})
     @Transactional(rollbackFor = Exception.class)
     public List<StorageInfoVO> uploadFile(MultipartFile[] fileList, Long branchId) throws Exception {
         List<StorageInfoVO> uploadIds = new ArrayList<>();
@@ -163,6 +215,7 @@ public class ProductBasicService {
         return uploadIds;
     }
 
+    @ExposeAction(value = "get product basic info", parameters = {"product query condition"})
     public List<ProductBasicVO> findProductBasic(ProductBasicReq productBasicReq) throws Exception {
         List<ProductBasicVO> productBasicVOS = new ArrayList<>();
         try {

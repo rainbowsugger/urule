@@ -1,9 +1,9 @@
-package com.rule.server.ruleserver.service;
+package com.rule.client.ruleclient.service;
 
 
 import cn.hutool.json.JSONObject;
-import com.rule.server.ruleserver.vo.ObjectFormulaVO;
-import com.rule.server.ruleserver.vo.ProductBasicReq;
+import com.rule.client.ruleclient.vo.ObjectFormulaVO;
+import com.rule.client.ruleclient.vo.ProductBasicReq;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +24,9 @@ public interface ProductCenterService {
 
     @RequestMapping(value = "product-center/productBasic/findProductBasic",method = RequestMethod.POST)
     JSONObject getProductInfo(@RequestBody ProductBasicReq model);
+
+    @RequestMapping(value = "product-center/productInfo/info",method = RequestMethod.GET)
+    JSONObject getProductInfo(@RequestParam Long productId);
 
     @RequestMapping(value = "product-center/agreement/check/coolingOffSurrender",method = RequestMethod.POST)
     JSONObject checkCoolingOffRule(Map<String, Object> request);

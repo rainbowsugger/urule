@@ -16,7 +16,7 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/test")
 public class RuleController {
-    @GetMapping("/uw")
+    @GetMapping("/uw/nationality")
     public String rule(@RequestParam Long data) throws IOException {
         //创建一个KnowledgeSession对象
         KnowledgeService knowledgeService =
@@ -32,4 +32,6 @@ public class RuleController {
         String uwResult = (String)session.getParameter("UWResult");
         return String.valueOf(uwResult);
     }
+
+
 }

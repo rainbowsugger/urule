@@ -1,4 +1,4 @@
-package com.rule.server.ruleserver.vo;
+package com.rule.client.ruleclient.vo;
 
 import lombok.Data;
 

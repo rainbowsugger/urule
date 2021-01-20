@@ -1,4 +1,4 @@
-package com.rule.server.ruleserver.service;
+package com.rule.client.ruleclient.service;
 
 import cn.hutool.json.JSONObject;
 import org.springframework.cloud.openfeign.FeignClient;
