@@ -1,4 +1,4 @@
-package com.rule.server.ruleserver;
+package com.rule.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

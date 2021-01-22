@@ -18,3 +18,6 @@ urule:
     databasetype: mysql
 
 
+  debug: true
+  defaultHtmlFileDebugPath: D:/Projects/urule2
+

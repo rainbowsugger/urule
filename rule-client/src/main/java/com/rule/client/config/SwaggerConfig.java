@@ -1,4 +1,4 @@
-package com.rule.client.ruleclient.config;
+package com.rule.client.config;
 
 import io.swagger.annotations.ApiOperation;
 import org.springframework.context.annotation.Bean;

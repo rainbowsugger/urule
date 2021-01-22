@@ -1,4 +1,4 @@
-package com.rule.server.ruleserver;
+package com.rule.server;
 
 import com.bstek.urule.console.servlet.URuleServlet;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;

@@ -1,4 +1,4 @@
-package com.rule.client.ruleclient.service;
+package com.rule.client.service;
 
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
@@ -8,12 +8,9 @@ import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
-import com.rule.client.ruleclient.vo.*;
-import lombok.extern.slf4j.Slf4j;
+import com.rule.client.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -23,8 +20,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @author jie.lin
+ */
 @Service
-@Slf4j
 public class ProductBasicService {
 
 
@@ -75,7 +74,8 @@ public class ProductBasicService {
             throw  new Exception( "not found payument frequency for product id" + productId);
         }
         List<ProductPaymentFrequencyVO> frequencyVOS = frequencyJson.toList(ProductPaymentFrequencyVO.class);
-        Map<Integer, BigDecimal> frequencyMap = frequencyVOS.stream().collect(Collectors.toMap(ProductPaymentFrequencyVO::getFrequency, ProductPaymentFrequencyVO::getModalFactor));
+        Map<Integer, BigDecimal> frequencyMap = frequencyVOS.stream().collect(
+            Collectors.toMap(ProductPaymentFrequencyVO::getFrequency, ProductPaymentFrequencyVO::getModalFactor));
         return frequencyMap;
     }
 
@@ -197,22 +197,6 @@ public class ProductBasicService {
         Integer id = (Integer) smsMap.get("notice id");
         return id.longValue();
 
-    }
-
-    @ExposeAction(value = "upload file", parameters = {"MultipartFile list", "branchId"})
-    @Transactional(rollbackFor = Exception.class)
-    public List<StorageInfoVO> uploadFile(MultipartFile[] fileList, Long branchId) throws Exception {
-        List<StorageInfoVO> uploadIds = new ArrayList<>();
-        try {
-            for(MultipartFile file : fileList){
-                JSONObject fileInfo = productCenterService.upload(file, branchId);
-                StorageInfoVO storageInfoVO = JSONUtil.toBean(fileInfo.getJSONObject("data"), StorageInfoVO.class);
-                uploadIds.add(storageInfoVO);
-            }
-        }catch (Exception e){
-            throw new Exception("upload file call fail", e);
-        }
-        return uploadIds;
     }
 
     @ExposeAction(value = "get product basic info", parameters = {"product query condition"})

@@ -1,7 +1,6 @@
-package com.rule.client.ruleclient.vo;
+package com.rule.client.vo;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

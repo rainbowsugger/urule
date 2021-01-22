@@ -1,4 +1,4 @@
-package com.rule.server.ruleserver;
+package com.rule.server;
 
 import com.bstek.urule.action.ActionId;
 import com.bstek.urule.model.ExposeAction;

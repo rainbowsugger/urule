@@ -1,4 +1,4 @@
-package com.rule.client.ruleclient.vo;
+package com.rule.client.vo;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

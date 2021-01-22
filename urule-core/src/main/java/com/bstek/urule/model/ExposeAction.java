@@ -28,4 +28,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExposeAction {
 	public String value();
+
+	String[] parameters() default {};
 }

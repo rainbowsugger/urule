@@ -1,7 +1,12 @@
 
 urule:
   resporityServerUrl: http://localhost:8787
-  knowledgeUpdateCycle: 1
+  knowledgeUpdateCycle: 0
+
+policy:
+  url: http://mall.datastreamer.cn:80
+product:
+  url: http://mall.datastreamer.cn
 
 server:
   port: 7878

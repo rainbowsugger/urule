@@ -1,15 +1,17 @@
-package com.rule.client.ruleclient.service;
-
+package com.rule.client.service;
 
 import cn.hutool.json.JSONObject;
-import com.rule.client.ruleclient.vo.ObjectFormulaVO;
-import com.rule.client.ruleclient.vo.ProductBasicReq;
+import com.rule.client.vo.ObjectFormulaVO;
+import com.rule.client.vo.ProductBasicReq;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
+/**
+ * @author jie.lin
+ */
 @FeignClient(url = "${product.url}",name = "productUrl")
 public interface ProductCenterService {
 
