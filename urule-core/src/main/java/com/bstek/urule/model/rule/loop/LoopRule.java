@@ -15,15 +15,6 @@
  ******************************************************************************/
 package com.bstek.urule.model.rule.loop;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.bstek.urule.action.Action;
 import com.bstek.urule.action.ActionValue;
 import com.bstek.urule.model.GeneralEntity;
@@ -34,6 +25,10 @@ import com.bstek.urule.runtime.KnowledgeSessionFactory;
 import com.bstek.urule.runtime.builtinaction.LoopAction;
 import com.bstek.urule.runtime.response.RuleExecutionResponse;
 import com.bstek.urule.runtime.rete.Context;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.util.*;
 
 /**
  * @author Jacky.gao
@@ -53,7 +48,7 @@ public class LoopRule extends Rule{
 		Object loopTargetObj=context.getValueCompute().complexValueCompute(loopTarget.getValue(), matchedObject, context, allMatchedObjects,variableMap);
 		if(loopTargetObj==null){
 			log.warn("Loop rule ["+getName()+"] target value is null,cannot be executed.");
-			return null;
+			loopTargetObj = new ArrayList<>();
 		}
 		
 		List<ActionValue> values=new ArrayList<ActionValue>();
@@ -61,7 +56,7 @@ public class LoopRule extends Rule{
 		List<Object> facts=parentSession.getAllFacts();
 		Map<String,Object> parameters=parentSession.getParameters();
 		
-		if(loopStart!=null){			
+		if(loopStart!=null){
 			List<Action> startActions=loopStart.getActions();
 			if(startActions!=null){
 				for(Action action:startActions){
