@@ -15,12 +15,12 @@
  ******************************************************************************/
 package com.bstek.urule.console.repository;
 
-import java.io.InputStream;
-import java.util.List;
-
 import com.bstek.urule.console.repository.model.RepositoryFile;
 import com.bstek.urule.console.repository.model.ResourcePackage;
 import com.bstek.urule.console.repository.model.VersionFile;
+
+import java.io.InputStream;
+import java.util.List;
 
 /**
  * @author Jacky.gao
@@ -53,7 +53,7 @@ public interface RepositoryReader {
 	 * 获取指定路径文件的所有版本信息
 	 * @param path 文件路径
 	 * @return 返回版本信息列表
-	 * @throws Exception
+	 * @throws Exception 抛出异常
 	 */
 	List<VersionFile> getVersionFiles(String path) throws Exception;
 	

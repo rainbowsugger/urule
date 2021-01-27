@@ -2,10 +2,10 @@ server:
   port: 8787
 spring:
   datasource:
-    jdbc-url: jdbc:mysql://localhost:3306/urule_test?useUnicode=true&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+    jdbc-url: jdbc:mysql://rm-bp15j925v4x34ao0uvo.mysql.rds.aliyuncs.com:3306/urule_test?useUnicode=true&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: jie.lin
+    username: bxadmin
+    password: baoxin@2019
   jackson:
     default-property-inclusion: non_null
 

@@ -1,10 +1,7 @@
 package com.rule.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rule.client.vo.CustomerInfoVO;
-import com.rule.client.vo.InvokeRuleVO;
-import com.rule.client.vo.PolicyProductVO;
-import com.rule.client.vo.UwCheckVO;
+import com.rule.client.vo.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {RuleClientApplication.class})
 @AutoConfigureMockMvc
 public class RuleInvokeTest {
 
@@ -44,7 +41,7 @@ public class RuleInvokeTest {
 
         Map<String, Object> customer = new HashMap<>();
         customer.put("name", "Jacob");
-        customer.put("nationality", 2);
+        customer.put("nationalit y", 2);
         customer.put("dsdsad","2222");
 
         Map<String, Object> claimInfoList = new HashMap<>();
@@ -69,9 +66,18 @@ public class RuleInvokeTest {
         entityParams.put("claimInfoList", claimInfoList);
 
         Map<String, Object> objectParams = new HashMap<>();
-        objectParams.put("DeathRiskSA", 100000);
-        objectParams.put("NonMedicalSA", 90000);
-        objectParams.put("CIRiskSA", 600000);
+        objectParams.put("deathRiskSA", 100000);
+        objectParams.put("nonMedicalSA", 90000);
+        objectParams.put("ciRiskSA", 600000);
+
+        Map<String, String> customerTag1 = new HashMap<>();
+        customerTag1.put("customerTag", "3");
+        Map<String, String> customerTag2 = new HashMap<>();
+        customerTag1.put("customerTag", "4");
+        List customerTags = new ArrayList();
+        customerTags.add(customerTag1);
+        customerTags.add(customerTag2);
+        objectParams.put("customerTags", customerTags);
 
         invokeRuleVO.setEntityParams(entityParams);
         invokeRuleVO.setObjectParams(objectParams);
@@ -116,32 +122,20 @@ public class RuleInvokeTest {
     @Test
     public void invokeRule2() throws Exception {
         CustomerInfoVO customerInfoVO = new CustomerInfoVO();
-        customerInfoVO.setName("天地不仁以万物为刍狗");
-        customerInfoVO.setNationality(1L);
+        customerInfoVO.setName("云某某");
+        customerInfoVO.setNationality(2L);
+        List<String> customerTags = new ArrayList<>();
+        customerTags.add("3");
+        customerTags.add("4");
+        customerInfoVO.setCustomerTags(customerTags);
         PolicyProductVO policyProductVO = new PolicyProductVO();
-        policyProductVO.setProductId(85L);
+        policyProductVO.setProductId(174L);
         policyProductVO.setAmount(5222222L);
         List<String> flowIds = new ArrayList<>();
         flowIds.add("UW");
-
-        Map<String, Object> claimInfoList = new HashMap<>();
-        List<Map<String, Object>> claimInfos = new ArrayList();
-
-        Map<String, Object> claimInfoParam1 = new HashMap<>();
-        claimInfoParam1.put("claimNo", "CLM000001");
-        claimInfoParam1.put("claimStatus", "Accepted");
-        Map<String, Object> claimInfo1 = new HashMap<>();
-        claimInfo1.put("claimInfo", claimInfoParam1);
-        Map<String, Object> claimInfoParam2 = new HashMap<>();
-        claimInfoParam2.put("claimNo", "CLM000002");
-        claimInfoParam2.put("claimStatus", "Cancelled");
-        Map<String, Object> claimInfo2 = new HashMap<>();
-        claimInfo2.put("claimInfo", claimInfoParam2);
-
-        claimInfos.add(claimInfo1);
-        claimInfos.add(claimInfo2);
-
-        claimInfoList.put("claimInfos", claimInfos);
+        List<ClaimInfo> claimInfoList = new ArrayList<>();
+        claimInfoList.add(new ClaimInfo("CLM0000001", "Cancelled"));
+        claimInfoList.add(new ClaimInfo("CLM0000002", "Settled"));
 
         UwCheckVO uwCheckVO = new UwCheckVO();
         uwCheckVO.setCustomerInfoVO(customerInfoVO);

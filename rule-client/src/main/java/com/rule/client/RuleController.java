@@ -8,10 +8,7 @@ import com.bstek.urule.runtime.KnowledgeSessionFactory;
 import com.bstek.urule.runtime.service.KnowledgeService;
 import com.rule.client.service.ProductBasicService;
 import com.rule.client.service.RuleEntityUtil;
-import com.rule.client.vo.CustomerInfoVO;
-import com.rule.client.vo.InvokeRuleVO;
-import com.rule.client.vo.PolicyProductVO;
-import com.rule.client.vo.UwCheckVO;
+import com.rule.client.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +16,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/test")
@@ -33,7 +31,7 @@ public class RuleController {
     }
 
     @PostMapping("/uw/{rule}")
-    public String packageRule(@PathVariable(value = "rule") String rule,  @RequestBody InvokeRuleVO invokeRuleVO) throws IOException {
+    public ResultResponse<List<String>> packageRule(@PathVariable(value = "rule") String rule,  @RequestBody InvokeRuleVO invokeRuleVO) throws IOException {
         //创建一个KnowledgeSession对象
         KnowledgeService knowledgeService =
             (KnowledgeService)Utils.getApplicationContext().getBean(KnowledgeService.BEAN_ID);
@@ -78,21 +76,22 @@ public class RuleController {
             });
             session.fireRules(objectParams);
         }
-        String uwResult = (String)session.getParameter("UWResult");
         List<String> uwResults = (List<String>)session.getParameter("uwDecisionList");
 
-        return uwResults.toString();
+        return ResultResponse.success(uwResults);
     }
 
     @PostMapping("/uw/rule/{rule}")
-    public String packageRule2(@PathVariable(value = "rule") String rule, @RequestBody UwCheckVO uwCheckVO) throws IOException {
+    public ResultResponse<List<String>> packageRule2(@PathVariable(value = "rule") String rule, @RequestBody UwCheckVO uwCheckVO) throws IOException {
        // PolicyProductVO policyProductVO = new PolicyProductVO();
         //创建一个KnowledgeSession对象
         KnowledgeService knowledgeService =
             (KnowledgeService)Utils.getApplicationContext().getBean(KnowledgeService.BEAN_ID);
         KnowledgePackage knowledgePackage = knowledgeService.getKnowledge("test_demo/"+rule);
         KnowledgeSession session = KnowledgeSessionFactory.newKnowledgeSession(knowledgePackage);
+        //customer
         GeneralEntity customer = new GeneralEntity("customer");
+        List customerTags = new ArrayList<>();
         Map<String, Object> objectParams = new HashMap<>();
         if(uwCheckVO != null){
             if(uwCheckVO.getCustomerInfoVO() != null){
@@ -107,19 +106,49 @@ public class RuleController {
                         e.printStackTrace();
                     }
                 });
+                if(customerInfoVO.getCustomerTags() != null){
+                    customerTags = customerInfoVO.getCustomerTags().stream().map(p -> {
+                        Map customerTag = new HashMap();
+                        customerTag.put("customerTag", p);
+                        return customerTag;
+                    }).collect(Collectors.toList());
+                }
             }
+            objectParams.put("customerTags", customerTags);
+            //claim
+            List<GeneralEntity> claimEntityList = new ArrayList();
+            if(uwCheckVO.getClaimInfoList() != null){
+                List<ClaimInfo> claimInfoList = uwCheckVO.getClaimInfoList();
+                claimEntityList = claimInfoList.stream().map(p -> {
+                    GeneralEntity claim = new GeneralEntity("claimInfo");
+                    Field[] fields = ClaimInfo.class.getDeclaredFields();
+                    Arrays.stream(fields).forEach(q -> {
+                        q.setAccessible(true);
+                        try {
+                            Object field = q.get(p);
+                            claim.put(q.getName(), field);
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    return claim;
+                }).collect(Collectors.toList());
+            }
+            //policy
             if(uwCheckVO.getPolicyProductVO() != null){
                 PolicyProductVO policyProductVO = uwCheckVO.getPolicyProductVO();
-                BigDecimal deathRiskSa = productBasicService.calcRiskSA(policyProductVO.getProductId(), policyProductVO.getAmount(), RiskCategory.DEATH.getKey());
-                BigDecimal ciRiskSa = productBasicService.calcRiskSA(policyProductVO.getProductId(), policyProductVO.getAmount(), RiskCategory.CRITICAL_ILLNESS.getKey());
-                BigDecimal saNonMedical = productBasicService.getSaNonMedical(policyProductVO.getProductId());
-                objectParams.put("DeathRiskSA", deathRiskSa);
-                objectParams.put("NonMedicalSA", ciRiskSa);
-                objectParams.put("CIRiskSA", saNonMedical);
+                BigDecimal deathRiskSA = productBasicService.calcRiskSA(policyProductVO.getProductId(), policyProductVO.getAmount(), RiskCategory.DEATH.getKey());
+                BigDecimal ciRiskSA = productBasicService.calcRiskSA(policyProductVO.getProductId(), policyProductVO.getAmount(), RiskCategory.CRITICAL_ILLNESS.getKey());
+                BigDecimal nonMedicalSA = productBasicService.getSaNonMedical(policyProductVO.getProductId());
+                objectParams.put("deathRiskSA", deathRiskSA);
+                objectParams.put("nonMedicalSA", nonMedicalSA);
+                objectParams.put("ciRiskSA", ciRiskSA);
             }
+
             session.insert(customer);
-
-
+            GeneralEntity claimInfoList = new GeneralEntity("claimInfoList");
+            claimInfoList.put("claimInfos", claimEntityList);
+            session.insert(claimInfoList);
 
             if(uwCheckVO.getFlowIds() != null && uwCheckVO.getFlowIds().size() > 0){
                 uwCheckVO.getFlowIds().forEach(p -> session.startProcess(p, objectParams));
@@ -127,12 +156,12 @@ public class RuleController {
                 session.fireRules(objectParams);
             }
         }
-        String uwResult = (String)session.getParameter("UWResult");
+        String uwResult = (String)session.getParameter("uwResult");
         List<String> uwResults = new ArrayList<>();
         if(session.getParameter("uwDecisionList") != null){
             uwResults = (List<String>)session.getParameter("uwDecisionList");
         }
-        return uwResults.toString();
+        return ResultResponse.success(uwResults);
     }
 
 }

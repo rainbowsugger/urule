@@ -3,7 +3,6 @@ package com.rule.client.vo;
 import lombok.Data;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 public class UwCheckVO {
@@ -12,7 +11,7 @@ public class UwCheckVO {
 
     private PolicyProductVO policyProductVO;
 
-    private Map claimInfoList;
+    private List<ClaimInfo> claimInfoList;
 
     List<String> flowIds;
 
